@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  appseed-app:
+    container_name: appseed_app
+    restart: always
+    build: .
+    networks:
+      - db_network
+      - web_network
+    # Adicione depends_on para garantir que o serviço do banco de dados seja iniciado primeiro
+    depends_on: 
+      - db
+
+  db:
+    container_name: db_mysql  # Nome do contêiner do banco de dados
+    image: mysql:latest  # Imagem do MySQL
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'dbsec'  # Nome do banco de dados
+      MYSQL_ROOT_PASSWORD: '123456'  # Senha do banco de dados
+    ports:
+      - "3307:3306"  # Porta do MySQL
+    networks:
+      - db_network
+
+  nginx:
+    container_name: nginx
+    restart: always
+    image: "nginx:latest"
+    ports:
+      - "5085:5085"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+    networks:
+      - web_network
+    depends_on: 
+      - appseed-app
+
+networks:
+  db_network:
+    driver: bridge
+  web_network:
+    driver: bridge
